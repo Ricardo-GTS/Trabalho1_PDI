@@ -14,6 +14,7 @@ public class ImageManager {
     private BufferedImage image;
     private BufferedImage originalImage;
     private String selectedImagePath; // Variável para armazenar o caminho do arquivo selecionado
+    private double[][][] hsbValues; 
 
     public ImageManager() {
         image = null;
@@ -27,19 +28,124 @@ public class ImageManager {
 
 
     public void convertRGBToHSB() {
+        hsbValues = new double[image.getWidth()][image.getHeight()][3];
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
                 Color pixelColor = new Color(image.getRGB(x, y));
-                float[] hsb = Color.RGBtoHSB(pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue(), null);
-                int newRGB = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
-                image.setRGB(x, y, newRGB);
+                double[] hsb = RGBtoHSB(pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue());
+                hsbValues[x][y][0] = hsb[0];
+                hsbValues[x][y][1] = hsb[1];
+                hsbValues[x][y][2] = hsb[2];
+
+                // Scale HSB values to the [0.0, 1.0] range
+                float h = (float) hsb[0] / 360.0f; // H component is scaled by 360
+                float s = (float) hsb[1];
+                float b = (float) hsb[2];
+    
+                // Create a new Color using the scaled HSB values
+                image.setRGB( x, y, new Color(h, s, b).getRGB());
+            }
+        }
+        System.out.println("Conversão RGB para HSB realizada com sucesso!");
+    }
+    
+
+    public static double[] RGBtoHSB(int red, int green, int blue) {
+        // Normalize red, green, and blue values
+        double r = ((double) red / 255.0);
+        double g = ((double) green / 255.0);
+        double b = ((double) blue / 255.0);
+    
+        // Conversion start
+        double max = Math.max(r, Math.max(g, b));
+        double min = Math.min(r, Math.min(g, b));
+    
+        double h = 0.0;
+        if (max == r && g >= b) {
+            h = 60 * (g - b) / (max - min);
+        } else if (max == r && g < b) {
+            h = 60 * (g - b) / (max - min) + 360;
+        } else if (max == g) {
+            h = 60 * (b - r) / (max - min) + 120;
+        } else if (max == b) {
+            h = 60 * (r - g) / (max - min) + 240;
+        }
+    
+        double s = (max == 0) ? 0.0 : (1.0 - (min / max));
+    
+        return new double[] { (double) h, (double) s, (double) (max) };
+    }
+    
+
+    public void convertHSBToRGB() {
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+
+                int Pixel [] = HSBtoRGB(hsbValues[x][y][0] , hsbValues[x][y][1],hsbValues[x][y][2]);
+                Color pixelColor = new Color(Pixel[0],Pixel[1],Pixel[2]);
+                image.setRGB( x, y, pixelColor.getRGB());
             }
         }
     }
 
-    public void convertHSBToRGB() {
-        image = deepCopy(originalImage);
+    public static int [] HSBtoRGB(double h, double s, double b) {
+        double r = 0;
+        double g = 0;
+        double blue = 0;
+    
+        if (s == 0) {
+            r = g = blue = b;
+        } else {
+            // The color wheel consists of 6 sectors. Figure out which sector you're in.
+            double sectorPos = h / 60.0;
+            int sectorNumber = (int) Math.floor(sectorPos);
+            // Get the fractional part of the sector
+            double fractionalSector = sectorPos - sectorNumber;
+    
+            // Calculate values for the three axes of the color.
+            double p = b * (1.0 - s);
+            double q = b * (1.0 - (s * fractionalSector));
+            double t = b * (1.0 - (s * (1 - fractionalSector)));
+    
+            // Assign the fractional colors to r, g, and blue based on the sector
+            // the angle is in.
+            switch (sectorNumber) {
+                case 0:
+                    r = b;
+                    g = t;
+                    blue = p;
+                    break;
+                case 1:
+                    r = q;
+                    g = b;
+                    blue = p;
+                    break;
+                case 2:
+                    r = p;
+                    g = b;
+                    blue = t;
+                    break;
+                case 3:
+                    r = p;
+                    g = q;
+                    blue = b;
+                    break;
+                case 4:
+                    r = t;
+                    g = p;
+                    blue = b;
+                    break;
+                case 5:
+                    r = b;
+                    g = p;
+                    blue = q;
+                    break;
+            }
+        }
+
+        return new int[] { (int) Math.round(r * 255.0), (int) Math.round(g * 255.0), (int) Math.round(blue * 255.0) };
     }
+    
 
     public void changeHue(float hueDelta) {
         for (int x = 0; x < image.getWidth(); x++) {
