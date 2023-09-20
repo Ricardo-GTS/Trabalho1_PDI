@@ -147,29 +147,44 @@ public class ImageManager {
     }
     
 
-    public void changeHue(float hueDelta) {
+    public void changeHue(double hueDelta) {
+        convertRGBToHSB();
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
-                Color pixelColor = new Color(image.getRGB(x, y));
-                float[] hsb = Color.RGBtoHSB(pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue(), null);
-                hsb[0] += hueDelta;
-                int newRGB = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
-                image.setRGB(x, y, newRGB);
+                hsbValues[x][y][0] += hueDelta;
+                
+                // Verifique se o valor de matiz está fora do intervalo 0-360 e ajuste, se necessário
+                if (hsbValues[x][y][0] > 360) {
+                    hsbValues[x][y][0] = 360;
+                } else if (hsbValues[x][y][0] < 0) {
+                    hsbValues[x][y][0] = 0;
+                }
             }
         }
+        convertHSBToRGB();
     }
-
-    public void changeSaturation(float saturationDelta) {
+    
+    public void changeSaturation(double saturationDelta) {
+        convertRGBToHSB();
+        
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
-                Color pixelColor = new Color(image.getRGB(x, y));
-                float[] hsb = Color.RGBtoHSB(pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue(), null);
-                hsb[1] += saturationDelta;
-                int newRGB = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
-                image.setRGB(x, y, newRGB);
+                // Obtenha a saturação original
+                double originalSaturation = hsbValues[x][y][1];
+                
+                // Verifique se o pixel não está em tons de cinza (saturação > 0)
+                if (originalSaturation > 0) {
+                    // Ajuste a saturação proporcionalmente, limitando-a entre 0 e 1
+                    double newSaturation = Math.max(0, Math.min(1, originalSaturation + saturationDelta));
+                    
+                    // Atribua o novo valor de saturação
+                    hsbValues[x][y][1] = newSaturation;
+                }
             }
         }
+        convertHSBToRGB();
     }
+    
 
     public void applyNegativeRGB() {
         for (int x = 0; x < image.getWidth(); x++) {

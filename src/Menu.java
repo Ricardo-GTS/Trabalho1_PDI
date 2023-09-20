@@ -161,16 +161,18 @@ public class Menu {
 
                 switch (subOpcao) {
                     case "1":
-                        System.out.println("Você escolheu Alteração de matiz.");
-                        // Implemente a lógica para a alteração de matiz aqui
+                        System.out.print("Digite o valor de alteração de matiz: ");
+                        double valorMatiz = scanner.nextDouble();
+                        imagem.changeHue(valorMatiz);    
                         break;
                     case "2":
-                        System.out.println("Você escolheu Saturação.");
-                        // Implemente a lógica para a alteração de saturação aqui
+                        System.out.print("Digite o valor de saturação entre 0 e 1 com virgula: ");
+                        double valorSaturacao = scanner.nextDouble();
+                        imagem.changeSaturation(valorSaturacao);
                         break;
                     case "3":
                         System.out.println("Exibindo imagem.");
-                        // Implemente a lógica para exibir a imagem aqui
+                        imagem.displayImage();
                         break;
                     case "4":
                         System.out.println("Voltando a imagem original.");
