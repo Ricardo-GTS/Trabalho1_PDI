@@ -14,7 +14,8 @@ public class ImageManager {
     private BufferedImage image;
     private BufferedImage originalImage;
     private String selectedImagePath; // Variável para armazenar o caminho do arquivo selecionado
-    private double[][][] hsbValues; 
+    private double[][][] hsbValues;
+    private Filter filter;
 
     public ImageManager() {
         image = null;
@@ -209,6 +210,48 @@ public class ImageManager {
         convertHSBToRGB();
     }
 
+    public void loadFilterFromFile(String filterFilePath) throws IOException {
+        filter = new Filter();
+        filter.loadFilter(filterFilePath);
+    }
+
+
+    public void correlationFilter() {
+        int m = filter.m;
+        int n = filter.n;
+        int stride = filter.stride;
+    
+        int resultWidth = (image.getWidth() - m + 1) / stride; // Adjusted to consider stride
+        int resultHeight = (image.getHeight() - n + 1) / stride; // Adjusted to consider stride
+        BufferedImage result = new BufferedImage(resultWidth, resultHeight, BufferedImage.TYPE_INT_RGB);
+    
+        for (int i = 0; i < resultHeight; i++) {
+            for (int j = 0; j < resultWidth; j++) {
+                int sumRed = 0, sumGreen = 0, sumBlue = 0;
+                for (int x = 0; x < m; x++) {
+                    for (int y = 0; y < n; y++) {
+                        int pixelX = j * stride + x; // Calculate the pixel position in the original image
+                        int pixelY = i * stride + y; // Calculate the pixel position in the original image
+                        
+                        if (pixelX >= 0 && pixelX < image.getWidth() && pixelY >= 0 && pixelY < image.getHeight()) {
+                            Color pixelColor = new Color(image.getRGB(pixelX, pixelY));
+                            sumRed += pixelColor.getRed() * filter.filter[x][y];
+                            sumGreen += pixelColor.getGreen() * filter.filter[x][y];
+                            sumBlue += pixelColor.getBlue() * filter.filter[x][y];
+                        }
+                    }
+                }
+                int resultRed = Math.min(255, Math.max(0, sumRed)); // Ensure result is within [0, 255]
+                int resultGreen = Math.min(255, Math.max(0, sumGreen)); // Ensure result is within [0, 255]
+                int resultBlue = Math.min(255, Math.max(0, sumBlue)); // Ensure result is within [0, 255]
+                Color resultColor = new Color(resultRed, resultGreen, resultBlue);
+                result.setRGB(j, i, resultColor.getRGB());
+            }
+        }
+        image = result;
+    }
+    
+
     public void applyBoxFilter(int m, int n, int stride) {
         BufferedImage resultImage = deepCopy(originalImage);
         for (int x = 0; x < image.getWidth() - m + 1; x += stride) {
@@ -232,13 +275,11 @@ public class ImageManager {
         image = resultImage;
     }
 
+
     public void applySobelFilter() {
         // Implement Sobel filter here
     }
 
-    public void loadFilterFromFile(String filterFilePath) {
-        // Load filter from file and apply it
-    }
 
     public void compareBoxFilters() {
         // Compare Box15x1(Box1x15(image)) with Box15x15(image)

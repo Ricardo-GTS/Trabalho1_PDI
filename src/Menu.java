@@ -19,7 +19,7 @@ public class Menu {
                 System.out.println("1 - Conversões RGB-HSB-RGB");
                 System.out.println("2 - Alteração de matiz e saturação no HSB, com posterior conversão a RGB");
                 System.out.println("3 - Negativo");
-                System.out.println("4 - Correlação m x n com stride");
+                System.out.println("4 - Filtros");
                 System.out.println("5 - Imagem original");
                 System.out.println("0 - Sair");
 
@@ -229,12 +229,13 @@ public class Menu {
         Scanner scanner = new Scanner(System.in);
             while (true) {
                 System.out.println("\n");
-                System.out.println("Submenu - Correlação m x n com stride:");
-                System.out.println("1 - Box");
-                System.out.println("2 - Sobel");
-                System.out.println("3 - Comparar Box15x1(Box1x15(imagem)) com Box15x15(imagem)");
-                System.out.println("4 - Exibir imagem");
-                System.out.println("5 - Retornar a imagem original");
+                System.out.println("Submenu - De Filtros:");
+                System.out.println("1 - Filtro Correlação Com arquivo de Filtro MxN e Stride");
+                System.out.println("2 - Filtro Box");
+                System.out.println("3 - Filtro Sobel com expansão de histograma");
+                System.out.println("4 - Comparar Box15x1(Box1x15(imagem)) com Box15x15(imagem)");
+                System.out.println("5 - Exibir imagem");
+                System.out.println("6 - Retornar a imagem original");
                 System.out.println("0 - Voltar ao menu principal");
 
                 System.out.print("Escolha uma opção: ");
@@ -243,21 +244,36 @@ public class Menu {
                 switch (subOpcao) {
                     case "1":
                         System.out.println("Você escolheu Correlação m x n com filtro Box.");
-                        // Implemente a lógica para a correlação com filtro Box aqui
+                        try {
+                            imagem.loadFilterFromFile("filter.txt");
+                            imagem.correlationFilter();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case "2":
-                        System.out.println("Você escolheu Correlação m x n com filtro Sobel.");
+                        System.out.println("Você escolheu filtro Box.");
+                        System.out.print("Digite o valor de M :");
+                        int M = scanner.nextInt();
+                        System.out.print("Digite o valor de N :");
+                        int N = scanner.nextInt();
+                        System.out.print("Digite o valor Do Stride :");
+                        int Stride = scanner.nextInt();
+                        imagem.applyBoxFilter(M, N, Stride);
+                        break;    
+                    case "3":
+                        System.out.println("Você escolheu filtro Sobel. com expansão de histograma");
                         // Implemente a lógica para a correlação com filtro Sobel aqui
                         break;
-                    case "3":
+                    case "4":
                         System.out.println("Comparando Box15x1(Box1x15(imagem)) com Box15x15(imagem).");
                         // Implemente a lógica para a comparação aqui
                         break;
-                    case "4":
-                        System.out.println("Exibindo imagem.");
-                        // Implemente a lógica para exibir a imagem aqui
-                        break;
                     case "5":
+                        System.out.println("Exibindo imagem.");
+                        imagem.displayImage();
+                        break;
+                    case "6":
                         System.out.println("Voltando a imagem original.");
                         imagem.revertToOriginalImage();
                         break;    
