@@ -166,7 +166,7 @@ public class ImageManager {
     
     public void changeSaturation(double saturationDelta) {
         convertRGBToHSB();
-        
+
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
                 // Obtenha a saturação original
@@ -200,15 +200,13 @@ public class ImageManager {
     }
 
     public void applyNegativeHSVBandV() {
+        convertRGBToHSB();
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
-                Color pixelColor = new Color(image.getRGB(x, y));
-                float[] hsb = Color.RGBtoHSB(pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue(), null);
-                hsb[2] = 1.0f - hsb[2]; // Invert the brightness (V) component
-                int newRGB = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
-                image.setRGB(x, y, newRGB);
+                hsbValues[x][y][2] = 1.0f - hsbValues[x][y][2];
             }
         }
+        convertHSBToRGB();
     }
 
     public void applyBoxFilter(int m, int n, int stride) {
