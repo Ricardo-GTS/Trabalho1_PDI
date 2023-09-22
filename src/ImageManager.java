@@ -325,6 +325,7 @@ public class ImageManager {
 
         ImageIcon imageIcon = new ImageIcon(resizedImage);
         JLabel jLabel = new JLabel(imageIcon);
+        frame.setAlwaysOnTop(true);
 
         frame.setLayout(new FlowLayout());
         frame.add(jLabel);

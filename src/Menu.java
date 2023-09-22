@@ -166,7 +166,7 @@ public class Menu {
                         imagem.changeHue(valorMatiz);    
                         break;
                     case "2":
-                        System.out.print("Digite o valor de saturação entre 0 e 1 com virgula: ");
+                        System.out.print("Digite o valor de saturação entre -1 e 1 com virgula: ");
                         double valorSaturacao = scanner.nextDouble();
                         imagem.changeSaturation(valorSaturacao);
                         break;
