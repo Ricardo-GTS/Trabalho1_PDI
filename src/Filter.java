@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 public class Filter{
 
     private  String contentBuffer;
-    public  int[][] filter;
+    public  float[][] filter;
     public  int stride;
     public  int m;
     public  int n;
@@ -41,12 +41,12 @@ public class Filter{
             throw new IOException();
         }
         // Inicia a matriz do filtro
-        filter = new int[m][n];
+        filter = new float[m][n];
         
         // Preenche a matriz do filtro
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                filter[i][j] = Integer.parseInt(headerParts[count].trim()); count++;
+                filter[i][j] = Float.parseFloat(headerParts[count].trim()); count++;
             }
         }
 
@@ -58,8 +58,4 @@ public class Filter{
         }
     }
 
-    public  void main(String[] args) throws IOException {
-        // Specify the path to the filter file
-        loadFilter("filter.txt");
-    }
 }

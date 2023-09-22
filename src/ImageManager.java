@@ -227,7 +227,7 @@ public class ImageManager {
     
         for (int i = 0; i < resultHeight; i++) {
             for (int j = 0; j < resultWidth; j++) {
-                int sumRed = 0, sumGreen = 0, sumBlue = 0;
+                float sumRed = 0, sumGreen = 0, sumBlue = 0;
                 for (int x = 0; x < m; x++) {
                     for (int y = 0; y < n; y++) {
                         int pixelX = j * stride + x; // Calculate the pixel position in the original image
@@ -241,9 +241,9 @@ public class ImageManager {
                         }
                     }
                 }
-                int resultRed = Math.min(255, Math.max(0, sumRed)); // Ensure result is within [0, 255]
-                int resultGreen = Math.min(255, Math.max(0, sumGreen)); // Ensure result is within [0, 255]
-                int resultBlue = Math.min(255, Math.max(0, sumBlue)); // Ensure result is within [0, 255]
+                int resultRed = (int) Math.min(255, Math.max(0, sumRed)); // Ensure result is within [0, 255]
+                int resultGreen = (int) Math.min(255, Math.max(0, sumGreen)); // Ensure result is within [0, 255]
+                int resultBlue = (int) Math.min(255, Math.max(0, sumBlue)); // Ensure result is within [0, 255]
                 Color resultColor = new Color(resultRed, resultGreen, resultBlue);
                 result.setRGB(j, i, resultColor.getRGB());
             }
