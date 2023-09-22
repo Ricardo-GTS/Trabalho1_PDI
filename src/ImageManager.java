@@ -38,12 +38,12 @@ public class ImageManager {
                 hsbValues[x][y][1] = hsb[1];
                 hsbValues[x][y][2] = hsb[2];
 
-                // Scale HSB values to the [0.0, 1.0] range
-                float h = (float) hsb[0] / 360.0f; // H component is scaled by 360
+                //Escalona os valores HSB para o intervalo [0.0, 1.0]
+                float h = (float) hsb[0] / 360.0f; // Componente H é escalonado por 360
                 float s = (float) hsb[1];
                 float b = (float) hsb[2];
     
-                // Create a new Color using the scaled HSB values
+                //Cria uma nova cor usando os valores HSB escalonados
                 image.setRGB( x, y, new Color(h, s, b).getRGB());
             }
         }
@@ -252,28 +252,38 @@ public class ImageManager {
     }
     
 
-    public void applyBoxFilter(int m, int n, int stride) {
-        BufferedImage resultImage = deepCopy(originalImage);
-        for (int x = 0; x < image.getWidth() - m + 1; x += stride) {
-            for (int y = 0; y < image.getHeight() - n + 1; y += stride) {
+        public void applyBoxFilter(int m, int n, int stride) {
+    
+        int resultWidth = (image.getWidth() - m + 1) / stride; // Adjusted to consider stride
+        int resultHeight = (image.getHeight() - n + 1) / stride; // Adjusted to consider stride
+        BufferedImage result = new BufferedImage(resultWidth, resultHeight, BufferedImage.TYPE_INT_RGB);
+    
+        for (int i = 0; i < resultHeight; i++) {
+            for (int j = 0; j < resultWidth; j++) {
                 int sumRed = 0, sumGreen = 0, sumBlue = 0;
-                for (int i = 0; i < m; i++) {
-                    for (int j = 0; j < n; j++) {
-                        Color pixelColor = new Color(image.getRGB(x + i, y + j));
-                        sumRed += pixelColor.getRed();
-                        sumGreen += pixelColor.getGreen();
-                        sumBlue += pixelColor.getBlue();
+                for (int x = 0; x < m; x++) {
+                    for (int y = 0; y < n; y++) {
+                        int pixelX = j * stride + x; // Calculate the pixel position in the original image
+                        int pixelY = i * stride + y; // Calculate the pixel position in the original image
+                        
+                        if (pixelX >= 0 && pixelX < image.getWidth() && pixelY >= 0 && pixelY < image.getHeight()) {
+                            Color pixelColor = new Color(image.getRGB(pixelX, pixelY));
+                            sumRed += pixelColor.getRed();
+                            sumGreen += pixelColor.getGreen();
+                            sumBlue += pixelColor.getBlue();
+                        }
                     }
                 }
                 int averageRed = sumRed / (m * n);
                 int averageGreen = sumGreen / (m * n);
                 int averageBlue = sumBlue / (m * n);
                 Color newColor = new Color(averageRed, averageGreen, averageBlue);
-                resultImage.setRGB(x + m / 2, y + n / 2, newColor.getRGB());
+                result.setRGB(j, i, newColor.getRGB());
             }
         }
-        image = resultImage;
+        image = result;
     }
+    
 
 
     public void applySobelFilter() {
