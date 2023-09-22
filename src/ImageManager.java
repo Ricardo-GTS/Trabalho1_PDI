@@ -292,11 +292,38 @@ public class ImageManager {
 
     
     public void displayImage() {
+
+        // Redimensiona a imagem para 800x600
+
+        // Calcula as novas dimensões com base na proporção
+        int maxWidth = 1000;
+        int maxHeight = 800;
+        int originalWidth = image.getWidth();
+        int originalHeight = image.getHeight();
+        int newWidth = originalWidth;
+        int newHeight = originalHeight;
+
+        if (originalWidth > maxWidth || originalHeight > maxHeight) {
+            double widthRatio = (double) maxWidth / originalWidth;
+            double heightRatio = (double) maxHeight / originalHeight;
+
+            if (widthRatio < heightRatio) {
+                newWidth = maxWidth;
+                newHeight = (int) (originalHeight * widthRatio);
+            } else {
+                newWidth = (int) (originalWidth * heightRatio);
+                newHeight = maxHeight;
+            }
+        }
+
+        // Redimensiona a imagem
+        Image resizedImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setTitle("Image Viewer");
+        frame.setTitle("Resultado");
 
-        ImageIcon imageIcon = new ImageIcon(image);
+        ImageIcon imageIcon = new ImageIcon(resizedImage);
         JLabel jLabel = new JLabel(imageIcon);
 
         frame.setLayout(new FlowLayout());
