@@ -39,11 +39,12 @@ public class ImageManager {
                 hsbValues[x][y][2] = hsb[2];
 
                 //Escalona os valores HSB para o intervalo [0.0, 1.0]
-                float h = (float) hsb[0] / 360.0f; // Componente H é escalonado por 360
+                float h = (float) hsb[0] / 360f;
                 float s = (float) hsb[1];
                 float b = (float) hsb[2];
     
                 //Cria uma nova cor usando os valores HSB escalonados
+
                 image.setRGB( x, y, new Color(h, s, b).getRGB());
             }
         }
@@ -149,21 +150,25 @@ public class ImageManager {
     
 
     public void changeHue(double hueDelta) {
+        System.out.println(hueDelta);
         convertRGBToHSB();
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
                 hsbValues[x][y][0] += hueDelta;
-                
-                // Verifique se o valor de matiz está fora do intervalo 0-360 e ajuste, se necessário
-                if (hsbValues[x][y][0] > 360) {
-                    hsbValues[x][y][0] = 360;
-                } else if (hsbValues[x][y][0] < 0) {
-                    hsbValues[x][y][0] = 0;
+    
+                // Wrap the hue value within the range [0, 360]
+                hsbValues[x][y][0] %= 360;
+    
+                // Ensure it's positive
+                if (hsbValues[x][y][0] < 0) {
+                    hsbValues[x][y][0] += 360;
                 }
             }
         }
         convertHSBToRGB();
     }
+    
+
     
     public void changeSaturation(double saturationDelta) {
         convertRGBToHSB();
@@ -204,7 +209,10 @@ public class ImageManager {
         convertRGBToHSB();
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
-                hsbValues[x][y][2] = 1.0f - hsbValues[x][y][2];
+                if(1.0f - hsbValues[x][y][2] > 0)
+                    hsbValues[x][y][2] = 1.0f - hsbValues[x][y][2];
+                else
+                    hsbValues[x][y][2] = 0;
             }
         }
         convertHSBToRGB();
@@ -285,14 +293,123 @@ public class ImageManager {
     }
     
 
+    public void applySobelFilterWithHistogramExpansion() {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        
+        BufferedImage resultImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        
+        // Sobel filter kernels
+        int[][] sobelX = {
+            {-1, 0, 1},
+            {-2, 0, 2},
+            {-1, 0, 1}
+        };
+        
+        int[][] sobelY = {
+            {-1, -2, -1},
+            {0, 0, 0},
+            {1, 2, 1}
+        };
+        
+        for (int x = 1; x < width - 1; x++) {
+            for (int y = 1; y < height - 1; y++) {
+                int gxRed = 0;
+                int gxGreen = 0;
+                int gxBlue = 0;
+                int gyRed = 0;
+                int gyGreen = 0;
+                int gyBlue = 0;
+                
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        Color pixelColor = new Color(image.getRGB(x + i, y + j));
+                        int pixelRed = pixelColor.getRed();
+                        int pixelGreen = pixelColor.getGreen();
+                        int pixelBlue = pixelColor.getBlue();
+                        
+                        gxRed += sobelX[i + 1][j + 1] * pixelRed;
+                        gxGreen += sobelX[i + 1][j + 1] * pixelGreen;
+                        gxBlue += sobelX[i + 1][j + 1] * pixelBlue;
+                        
+                        gyRed += sobelY[i + 1][j + 1] * pixelRed;
+                        gyGreen += sobelY[i + 1][j + 1] * pixelGreen;
+                        gyBlue += sobelY[i + 1][j + 1] * pixelBlue;
+                    }
+                }
+                
+                int gradientMagnitudeRed = (int) Math.sqrt(gxRed * gxRed + gyRed * gyRed);
+                int gradientMagnitudeGreen = (int) Math.sqrt(gxGreen * gxGreen + gyGreen * gyGreen);
+                int gradientMagnitudeBlue = (int) Math.sqrt(gxBlue * gxBlue + gyBlue * gyBlue);
+                
+                gradientMagnitudeRed = Math.min(255, Math.max(0, gradientMagnitudeRed));
+                gradientMagnitudeGreen = Math.min(255, Math.max(0, gradientMagnitudeGreen));
+                gradientMagnitudeBlue = Math.min(255, Math.max(0, gradientMagnitudeBlue));
+                
+                Color resultColor = new Color(gradientMagnitudeRed, gradientMagnitudeGreen, gradientMagnitudeBlue);
+                resultImage.setRGB(x, y, resultColor.getRGB());
+            }
+        }
+        
+        // Histogram Expansion
+        int[] histogram = new int[256];
+        int totalPixels = width * height;
+        
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Color pixelColor = new Color(resultImage.getRGB(x, y));
+                int pixelValue = pixelColor.getRed(); // Use the red channel for histogram expansion
+                histogram[pixelValue]++;
+            }
+        }
+        
+        int[] cumulativeHistogram = new int[256];
+        cumulativeHistogram[0] = histogram[0];
+        
+        for (int i = 1; i < 256; i++) {
+            cumulativeHistogram[i] = cumulativeHistogram[i - 1] + histogram[i];
+        }
+        
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Color pixelColor = new Color(resultImage.getRGB(x, y));
+                int pixelValue = pixelColor.getRed(); // Use the red channel for histogram expansion
+                int expandedValue = (int) (255.0 * cumulativeHistogram[pixelValue] / totalPixels);
+                Color expandedColor = new Color(expandedValue, expandedValue, expandedValue);
+                resultImage.setRGB(x, y, expandedColor.getRGB());
+            }
+        }
 
-    public void applySobelFilter() {
-        // Implement Sobel filter here
+        image = resultImage;
     }
 
 
     public void compareBoxFilters() {
-        // Compare Box15x1(Box1x15(image)) with Box15x15(image)
+   // Assuming you have 'image', 'Box15x1', and 'Box15x15' as BufferedImage objects
+
+    // Measure the time taken by Box15x15
+    long startTime15x15 = System.currentTimeMillis();
+    applyBoxFilter(15, 15, 1);
+    long endTime15x15 = System.currentTimeMillis();
+    long elapsedTime15x15 = endTime15x15 - startTime15x15;
+    
+    // Now you have the execution times in 'elapsedTime15x15' and 'elapsedTime15x1Box1x15'
+    System.out.println("Filtro Box15x15 levou : " + elapsedTime15x15/1000 + " Segundos");
+    displayImage("Box15x15");
+    // Reset the image to its original state
+    revertToOriginalImage();
+
+    // Measure the time taken by Box15x1(Box1x15(image))
+    long startTime15x1Box1x15 = System.currentTimeMillis();
+    applyBoxFilter(15,1,1);
+    applyBoxFilter(15,1,1);
+    long endTime15x1Box1x15 = System.currentTimeMillis();
+    long elapsedTime15x1Box1x15 = endTime15x1Box1x15 - startTime15x1Box1x15;
+
+    // You can print or use these times for comparison
+    System.out.println("Filtro Box15x1(Box1x15(image)) levou : (Box1x15(image)): " + elapsedTime15x1Box1x15/1000 + " Segundos");
+    displayImage("Box15x1(Box1x15(image))");
+
     }
 
     public void revertToOriginalImage() {
@@ -301,7 +418,7 @@ public class ImageManager {
 
 
     
-    public void displayImage() {
+    public void displayImage(String title) {
 
         // Redimensiona a imagem para 800x600
 
@@ -331,7 +448,7 @@ public class ImageManager {
 
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setTitle("Resultado");
+        frame.setTitle(title);
 
         ImageIcon imageIcon = new ImageIcon(resizedImage);
         JLabel jLabel = new JLabel(imageIcon);

@@ -55,7 +55,7 @@ public class Menu {
                         if (imagemCarregada) {
                             System.out.println("Você escolheu Exibir imagem.");
                             // Implemente a lógica para exibir uma imagem aqui
-                            imageManager.displayImage();
+                            imageManager.displayImage("Menu Principal");
                         } else {
                             System.out.println("Não é possível exibir sem uma imagem carregada.");
                         }
@@ -124,14 +124,16 @@ public class Menu {
                     case "1":
                         System.out.println("Você escolheu RGB->HSB.");
                         imagem.convertRGBToHSB();
+                        imagem.displayImage("RGB->HSB");
                         break;
                     case "2":
                         System.out.println("Você escolheu HSB->RGB.");
                         imagem.convertHSBToRGB();
+                        imagem.displayImage("HSB->RGB");
                         break;
                     case "3":
                         System.out.println("Exibindo imagem.");
-                        imagem.displayImage();
+                        imagem.displayImage("Menu de Conversões");
                         break;
                     case "4":
                         System.out.println("Voltando a imagem original.");
@@ -163,16 +165,18 @@ public class Menu {
                     case "1":
                         System.out.print("Digite o valor de alteração de matiz: ");
                         double valorMatiz = scanner.nextDouble();
-                        imagem.changeHue(valorMatiz);    
+                        imagem.changeHue(valorMatiz);
+                        imagem.displayImage("Alteração de matiz");
                         break;
                     case "2":
                         System.out.print("Digite o valor de saturação entre -1 e 1 com virgula: ");
                         double valorSaturacao = scanner.nextDouble();
                         imagem.changeSaturation(valorSaturacao);
+                        imagem.displayImage("Alteração Saturação");
                         break;
                     case "3":
                         System.out.println("Exibindo imagem.");
-                        imagem.displayImage();
+                        imagem.displayImage("Menu de Alteração de matiz e saturação");
                         break;
                     case "4":
                         System.out.println("Voltando a imagem original.");
@@ -204,14 +208,16 @@ public class Menu {
                     case "1":
                         System.out.println("Você escolheu Negativo RGB (banda a banda).");
                         imagem.applyNegativeRGB();
+                        imagem.displayImage("Negativo RGB");
                         break;
                     case "2":
                         System.out.println("Você escolheu Negativo Banda V do HSV.");
                         imagem.applyNegativeHSVBandV();
+                        imagem.displayImage("Negativo Banda V do HSV");
                         break;
                     case "3":
                         System.out.println("Exibindo imagem.");
-                        imagem.displayImage();
+                        imagem.displayImage("Menu de Negativo");
                         break;
                     case "4":
                         System.out.println("Voltando a imagem original.");
@@ -247,6 +253,7 @@ public class Menu {
                         try {
                             imagem.loadFilterFromFile("filter.txt");
                             imagem.correlationFilter();
+                            imagem.displayImage("Correlação filtro com arquivo");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -260,18 +267,20 @@ public class Menu {
                         System.out.print("Digite o valor Do Stride :");
                         int Stride = scanner.nextInt();
                         imagem.applyBoxFilter(M, N, Stride);
+                        imagem.displayImage("Filtro Box"+M+"x"+N+" com Stride "+Stride);
                         break;    
                     case "3":
                         System.out.println("Você escolheu filtro Sobel. com expansão de histograma");
-                        // Implemente a lógica para a correlação com filtro Sobel aqui
+                        imagem.applySobelFilterWithHistogramExpansion();
+                        imagem.displayImage("Filtro Sobel com expansão de histograma");
                         break;
                     case "4":
                         System.out.println("Comparando Box15x1(Box1x15(imagem)) com Box15x15(imagem).");
-                        // Implemente a lógica para a comparação aqui
+                        imagem.compareBoxFilters();
                         break;
                     case "5":
                         System.out.println("Exibindo imagem.");
-                        imagem.displayImage();
+                        imagem.displayImage("Menu de Filtros");
                         break;
                     case "6":
                         System.out.println("Voltando a imagem original.");
