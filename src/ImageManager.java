@@ -428,13 +428,13 @@ public class ImageManager {
     // Measure the time taken by Box15x1(Box1x15(image))
     long startTime15x1Box1x15 = System.currentTimeMillis();
     applyBoxFilter(15, 1, 1);
-    applyBoxFilter(15, 1, 1);
+    applyBoxFilter(1, 15, 1);
     long endTime15x1Box1x15 = System.currentTimeMillis();
     long elapsedTime15x1Box1x15 = endTime15x1Box1x15 - startTime15x1Box1x15;
 
     // You can print or use these times for comparison
     System.out.println(
-        "Filtro Box15x1(Box1x15(image)) levou : (Box1x15(image)): " + elapsedTime15x1Box1x15 / 1000
+        "Filtro Box15x1(Box1x15(image)) levou: " + elapsedTime15x1Box1x15 / 1000
             + " Segundos");
     displayImage("Box15x1(Box1x15(image))");
 
