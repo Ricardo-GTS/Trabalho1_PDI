@@ -2,7 +2,7 @@ Aqui está o README traduzido para o projeto com as classes fornecidas:
 
 # Projeto de Processamento de Imagens
 
-Este projeto inclui classes Java para processamento de imagens e aplicação de filtros. As principais classes incluídas no projeto são:
+Este projeto tem como objetivo fazer a manipulação utilizando fundamentos do processamento digital de imagens e aplicação de filtros. As principais classes incluídas no projeto são:
 
 ## Classe `Filter`
 
